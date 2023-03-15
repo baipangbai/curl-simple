@@ -19,7 +19,6 @@ mod tests {
     struct BatchParam {
         infos: Vec<Infos>,
     }
-
     #[test]
     fn it_works() {
         let mut infos = Vec::new();
