@@ -4,41 +4,6 @@ use serde::{Deserialize, Serialize};
 use serde_json;
 use std::collections::HashMap;
 use std::io::{stdout, Read, Write};
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[derive(Serialize, Deserialize, Debug)]
-    struct Infos {
-        nodeId: String,
-        typeIds: String,
-    }
-
-    #[derive(Serialize, Deserialize, Debug)]
-    struct BatchParam {
-        infos: Vec<Infos>,
-    }
-    #[test]
-    fn it_works() {
-        let mut infos = Vec::new();
-        infos.push(Infos {
-            nodeId: "056768560".to_string(),
-            typeIds: "56, 57, 66, 70".to_string(),
-        });
-        let param = BatchParam { infos };
-
-        let mut http = CurlSimpleHttp::new();
-        http.bind("https://www.baidu.com".to_string())
-            .add_header("header".to_string(), "baipang".to_string())
-            .add_header("Content-Type".to_string(), "application/json".to_string())
-            .with_header()
-            .json_body(param)
-            .post()
-            .unwrap();
-    }
-}
-
 pub struct CurlSimpleHttp {
     easy: Easy,
     body: String,
@@ -115,5 +80,40 @@ impl CurlSimpleHttp {
         }
 
         Ok(())
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[derive(Serialize, Deserialize, Debug)]
+    struct Infos {
+        nodeId: String,
+        typeIds: String,
+    }
+
+    #[derive(Serialize, Deserialize, Debug)]
+    struct BatchParam {
+        infos: Vec<Infos>,
+    }
+    #[test]
+    fn it_works() {
+        let mut infos = Vec::new();
+        infos.push(Infos {
+            nodeId: "056768560".to_string(),
+            typeIds: "56, 57, 66, 70".to_string(),
+        });
+        let param = BatchParam { infos };
+
+        let mut http = CurlSimpleHttp::new();
+        http.bind("https://www.baidu.com".to_string())
+            .add_header("header".to_string(), "baipang".to_string())
+            .add_header("Content-Type".to_string(), "application/json".to_string())
+            .with_header()
+            .json_body(param)
+            .post()
+            .unwrap();
     }
 }
