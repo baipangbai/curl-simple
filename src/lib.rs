@@ -1,9 +1,9 @@
 use curl::easy::{Easy, List};
 use curl::Error;
 use serde::{Deserialize, Serialize};
-use serde_json;
+use serde_json::Value;
 use std::collections::HashMap;
-use std::io::{stdout, Read, Write};
+use std::io::Read;
 pub struct CurlSimpleHttp {
     easy: Easy,
     body: String,
@@ -54,7 +54,9 @@ impl CurlSimpleHttp {
         let mut param = self.body.as_bytes();
         self.easy.post_field_size(param.len() as u64).unwrap();
 
-        // let mut data = Vec::new();
+        // Set up a buffer to hold the response body
+        let mut buffer = Vec::new();
+
         {
             let mut transfer = self.easy.transfer();
             transfer
@@ -63,26 +65,25 @@ impl CurlSimpleHttp {
 
             transfer
                 .write_function(|data| {
-                    stdout().write_all(data).unwrap();
-                    // dst.extend_from_slice(data);
+                    buffer.extend_from_slice(data);
                     Ok(data.len())
                 })
                 .unwrap();
 
-            // transfer
-            //     .write_function(|new_data| {
-            //         data.write_all(new_data).unwrap();
-            //         Ok(new_data.len())
-            //     })
-            //     .unwrap();
-
-            transfer.perform().unwrap();
+            if let Err(err) = transfer.perform() {
+                println!("Error: {}", err);
+            }
         }
+        assert_eq!(self.easy.response_code().unwrap(), 200);
+
+        // Parse the response body as JSON and print it to the console
+        let response_body = String::from_utf8_lossy(&buffer);
+        let json_data: Value = serde_json::from_str(&response_body).unwrap();
+        println!("{}", json_data.to_string());
 
         Ok(())
     }
 }
-
 
 #[cfg(test)]
 mod tests {
